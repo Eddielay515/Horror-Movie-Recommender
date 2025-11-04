@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horror Movie Recommender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #2d0a0a 50%, #1a0000 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #ff0000;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.3);
+        }
+
+        .keyword-filter {
+            margin-bottom: 20px;
+        }
+
+        .keyword-filter h3 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .custom-keyword-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .custom-keyword-input input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .custom-keyword-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn {
+            padding: 10px 25px;
+            background: #ff0000;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .tag:hover {
+            background: rgba(255, 107, 107, 0.3);
+            border-color: #ff6b6b;
+        }
+
+        .tag.active {
+            background: #ff0000;
+            border-color: #ff0000;
+            transform: scale(1.05);
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .movie-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .movie-card:hover {
+            border-color: #ff0000;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+        }
+
+        .movie-title {
+            color: #ff6b6b;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .movie-year {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .movie-description {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .movie-keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .movie-keyword {
+            padding: 5px 12px;
+            background: rgba(139, 0, 0, 0.5);
+            border: 1px solid #ff6b6b;
+            border-radius: 15px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .movie-keyword:hover {
+            background: rgba(255, 0, 0, 0.7);
+            transform: scale(1.05);
+        }
+
+        .rating-system {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .rating-label {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .stars {
+            display: flex;
+            gap: 8px;
+            font-size: 2em;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #444;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .star:hover,
+        .star.hover {
+            color: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        .review-section {
+            margin-top: 15px;
+        }
+
+        .review-label {
+            color: #ff6b6b;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .review-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95em;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .review-textarea:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .review-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .saved-indicator {
+            color: #4caf50;
+            font-size: 0.85em;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .saved-indicator.show {
+            opacity: 1;
+        }
+
+        .refresh-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 40px;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .movies-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .custom-keyword-input {
+                flex-direction: column;
+            }
+
+            .custom-keyword-input input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎃 Horror Movie Recommender 🎃</h1>
+            <p>Discover your next terrifying watch</p>
+        </header>
+
+        <div class="controls">
+            <div class="keyword-filter">
+                <h3>Filter by Keywords:</h3>
+                <div class="keyword-tags" id="keywordTags"></div>
+                <div class="custom-keyword-input">
+                    <input type="text" id="customKeyword" placeholder="Enter a custom keyword (e.g., supernatural, zombie, found footage)">
+                    <button class="btn" onclick="filterByCustomKeyword()">Search</button>
+                    <button class="btn" onclick="clearFilters()">Show Random 5</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="movies-grid" id="moviesGrid"></div>
+
+        <button class="btn refresh-btn" onclick="loadRandomMovies()">Get 5 New Recommendations</button>
+    </div>
+
+    <script>
+        // Database of 30 horror movies
+        const horrorMovies = [
+            {
+                title: "The Exorcist",
+                year: 1973,
+                description: "A terrifying tale of demonic possession and the priests who attempt to save a young girl.",
+                keywords: ["possession", "supernatural", "classic", "religious", "psychological"]
+            },
+            {
+                title: "The Shining",
+                year: 1980,
+                description: "A family's winter caretaking job at an isolated hotel descends into madness and terror.",
+                keywords: ["psychological", "isolation", "ghosts", "classic", "stephen king"]
+            },
+            {
+                title: "Halloween",
+                year: 1978,
+                description: "A masked killer stalks babysitters on Halloween night in this slasher classic.",
+                keywords: ["slasher", "serial killer", "classic", "suspense", "masked killer"]
+            },
+            {
+                title: "A Nightmare on Elm Street",
+                year: 1984,
+                description: "Teenagers are terrorized in their dreams by a burned killer with razor-sharp glove.",
+                keywords: ["supernatural", "slasher", "dreams", "freddy krueger", "classic"]
+            },
+            {
+                title: "The Texas Chain Saw Massacre",
+                year: 1974,
+                description: "Five friends encounter a family of cannibals in rural Texas.",
+                keywords: ["slasher", "classic", "survival", "gore", "cannibals"]
+            },
+            {
+                title: "Hereditary",
+                year: 2018,
+                description: "A family's dark secrets unravel after the death of their secretive grandmother.",
+                keywords: ["supernatural", "psychological", "family horror", "modern", "cult"]
+            },
+            {
+                title: "Get Out",
+                year: 2017,
+                description: "A young man uncovers disturbing secrets when he meets his girlfriend's family.",
+                keywords: ["psychological", "thriller", "modern", "social commentary", "suspense"]
+            },
+            {
+                title: "The Conjuring",
+                year: 2013,
+                description: "Paranormal investigators help a family terrorized by a dark presence in their farmhouse.",
+                keywords: ["supernatural", "haunted house", "based on true story", "demons", "ghosts"]
+            },
+            {
+                title: "It Follows",
+                year: 2014,
+                description: "A teenager is stalked by a supernatural entity that can take any human form.",
+                keywords: ["supernatural", "modern", "atmospheric", "indie", "suspense"]
+            },
+            {
+                title: "The Witch",
+                year: 2015,
+                description: "A 1630s New England family encounters witchcraft and possession in the woods.",
+                keywords: ["period piece", "supernatural", "atmospheric", "folk horror", "indie"]
+            },
+            {
+                title: "Alien",
+                year: 1979,
+                description: "The crew of a commercial spacecraft encounter a deadly extraterrestrial creature.",
+                keywords: ["sci-fi horror", "creature", "classic", "survival", "space"]
+            },
+            {
+                title: "The Thing",
+                year: 1982,
+                description: "An Antarctic research team faces a shape-shifting alien that can assume any form.",
+                keywords: ["sci-fi horror", "creature", "classic", "paranoia", "isolation"]
+            },
+            {
+                title: "28 Days Later",
+                year: 2002,
+                description: "A virus turns most of humanity into rage-filled zombies in this British thriller.",
+                keywords: ["zombie", "apocalyptic", "virus", "survival", "modern"]
+            },
+            {
+                title: "The Ring",
+                year: 2002,
+                description: "A journalist investigates a cursed videotape that kills viewers seven days later.",
+                keywords: ["supernatural", "curse", "j-horror remake", "mystery", "ghosts"]
+            },
+            {
+                title: "Scream",
+                year: 1996,
+                description: "A masked killer targets teenagers in a small town, following horror movie rules.",
+                keywords: ["slasher", "meta", "mystery", "masked killer", "teen horror"]
+            },
+            {
+                title: "Saw",
+                year: 2004,
+                description: "Two men wake up chained in a bathroom, forced to play a twisted game to survive.",
+                keywords: ["torture", "psychological", "mystery", "gore", "survival"]
+            },
+            {
+                title: "The Babadook",
+                year: 2014,
+                description: "A mother and son are haunted by a sinister presence from a mysterious children's book.",
+                keywords: ["psychological", "supernatural", "grief", "modern", "indie"]
+            },
+            {
+                title: "Let the Right One In",
+                year: 2008,
+                description: "A bullied boy befriends a mysterious child vampire in suburban Sweden.",
+                keywords: ["vampire", "coming of age", "atmospheric", "foreign", "romance"]
+            },
+            {
+                title: "The Descent",
+                year: 2005,
+                description: "Six women become trapped in a cave system and encounter humanoid creatures.",
+                keywords: ["creature", "survival", "claustrophobic", "modern", "female-led"]
+            },
+            {
+                title: "Midsommar",
+                year: 2019,
+                description: "A couple travels to Sweden for a festival that occurs once every 90 years.",
+                keywords: ["folk horror", "cult", "psychological", "modern", "daylight horror"]
+            },
+            {
+                title: "Sinister",
+                year: 2012,
+                description: "A true-crime writer discovers disturbing home videos in his new house.",
+                keywords: ["supernatural", "found footage elements", "mystery", "demons", "modern"]
+            },
+            {
+                title: "The Cabin in the Woods",
+                year: 2011,
+                description: "Five friends at a remote cabin discover they're part of a sinister experiment.",
+                keywords: ["meta", "supernatural", "modern", "comedy horror", "twist"]
+            },
+            {
+                title: "Insidious",
+                year: 2010,
+                description: "A family seeks help for their comatose son who becomes a vessel for ghosts.",
+                keywords: ["supernatural", "haunted house", "astral projection", "demons", "modern"]
+            },
+            {
+                title: "The Omen",
+                year: 1976,
+                description: "A couple begins to suspect their adopted son might be the Antichrist.",
+                keywords: ["supernatural", "religious", "classic", "demonic", "psychological"]
+            },
+            {
+                title: "Rosemary's Baby",
+                year: 1968,
+                description: "A pregnant woman suspects her neighbors are part of a Satanic cult.",
+                keywords: ["psychological", "supernatural", "classic", "cult", "pregnancy horror"]
+            },
+            {
+                title: "Don't Breathe",
+                year: 2016,
+                description: "Three thieves break into a blind man's home, only to find themselves trapped.",
+                keywords: ["thriller", "survival", "modern", "home invasion", "suspense"]
+            },
+            {
+                title: "Evil Dead",
+                year: 2013,
+                description: "Five friends awaken demonic forces when they find the Book of the Dead.",
+                keywords: ["demons", "supernatural", "gore", "remake", "possession"]
+            },
+            {
+                title: "Train to Busan",
+                year: 2016,
+                description: "Passengers fight for survival on a train during a zombie outbreak in Korea.",
+                keywords: ["zombie", "survival", "foreign", "modern", "action horror"]
+            },
+            {
+                title: "The Autopsy of Jane Doe",
+                year: 2016,
+                description: "Father and son coroners experience supernatural phenomena while examining a mysterious corpse.",
+                keywords: ["supernatural", "mystery", "modern", "atmospheric", "indie"]
+            },
+            {
+                title: "A Quiet Place",
+                year: 2018,
+                description: "A family must live in silence to avoid mysterious creatures that hunt by sound.",
+                keywords: ["creature", "survival", "modern", "suspense", "family horror"]
+            }
+        ];
+
+        // Store user ratings and reviews
+        let userRatings = {};
+        let userReviews = {};
+        let activeFilters = new Set();
+        let currentMovies = [];
+
+        // Get all unique keywords
+        function getAllKeywords() {
+            const keywords = new Set();
+            horrorMovies.forEach(movie => {
+                movie.keywords.forEach(keyword => keywords.add(keyword));
+            });
+            return Array.from(keywords).sort();
+        }
+
+        // Initialize keyword tags
+        function initializeKeywordTags() {
+            const keywordTags = document.getElementById('keywordTags');
+            const keywords = getAllKeywords();
+
+            keywordTags.innerHTML = keywords.map(keyword =>
+                `<span class="tag" onclick="toggleKeywordFilter('${keyword}')">${keyword}</span>`
+            ).join('');
+        }
+
+        // Toggle keyword filter
+        function toggleKeywordFilter(keyword) {
+            if (activeFilters.has(keyword)) {
+                activeFilters.delete(keyword);
+            } else {
+                activeFilters.add(keyword);
+            }
+
+            updateTagStyles();
+
+            if (activeFilters.size > 0) {
+                loadFilteredMovies();
+            } else {
+                loadRandomMovies();
+            }
+        }
+
+        // Update tag styles
+        function updateTagStyles() {
+            document.querySelectorAll('.tag').forEach(tag => {
+                const keyword = tag.textContent;
+                if (activeFilters.has(keyword)) {
+                    tag.classList.add('active');
+                } else {
+                    tag.classList.remove('active');
+                }
+            });
+        }
+
+        // Filter by custom keyword
+        function filterByCustomKeyword() {
+            const input = document.getElementById('customKeyword');
+            const keyword = input.value.trim().toLowerCase();
+
+            if (!keyword) return;
+
+            const filtered = horrorMovies.filter(movie =>
+                movie.keywords.some(k => k.includes(keyword)) ||
+                movie.title.toLowerCase().includes(keyword) ||
+                movie.description.toLowerCase().includes(keyword)
+            );
+
+            if (filtered.length > 0) {
+                currentMovies = shuffleArray(filtered).slice(0, 5);
+                displayMovies();
+            } else {
+                alert('No movies found matching that keyword. Try another!');
+            }
+
+            input.value = '';
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            activeFilters.clear();
+            updateTagStyles();
+            loadRandomMovies();
+        }
+
+        // Load movies filtered by active keywords
+        function loadFilteredMovies() {
+            const filtered = horrorMovies.filter(movie =>
+                Array.from(activeFilters).every(filter =>
+                    movie.keywords.includes(filter)
+                )
+            );
+
+            if (filtered.length > 0) {
+                currentMovies = shuffleArray(filtered).slice(0, Math.min(5, filtered.length));
+            } else {
+                currentMovies = shuffleArray(horrorMovies).slice(0, 5);
+                alert('No movies match all selected filters. Showing random movies instead.');
+                activeFilters.clear();
+                updateTagStyles();
+            }
+
+            displayMovies();
+        }
+
+        // Shuffle array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Load 5 random movies
+        function loadRandomMovies() {
+            currentMovies = shuffleArray(horrorMovies).slice(0, 5);
+            displayMovies();
+        }
+
+        // Display movies
+        function displayMovies() {
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = currentMovies.map((movie, index) => `
+                <div class="movie-card">
+                    <h2 class="movie-title">${movie.title}</h2>
+                    <div class="movie-year">${movie.year}</div>
+                    <p class="movie-description">${movie.description}</p>
+                    <div class="movie-keywords">
+                        ${movie.keywords.map(keyword =>
+                            `<span class="movie-keyword" onclick="toggleKeywordFilter('${keyword}')">${keyword}</span>`
+                        ).join('')}
+                    </div>
+                    <div class="rating-system">
+                        <div class="rating-label">Rate this movie:</div>
+                        <div class="stars" data-movie="${index}">
+                            ${[1, 2, 3, 4, 5].map(star =>
+                                `<span class="star" data-rating="${star}">★</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div class="review-section">
+                        <div class="review-label">Your Review:</div>
+                        <textarea
+                            class="review-textarea"
+                            placeholder="Share your thoughts about this movie..."
+                            data-movie="${index}"
+                            oninput="saveReview(${index})"
+                        >${userReviews[movie.title] || ''}</textarea>
+                        <div class="saved-indicator" id="saved-${index}">✓ Saved</div>
+                    </div>
+                </div>
+            `).join('');
+
+            initializeStarRatings();
+        }
+
+        // Initialize star ratings
+        function initializeStarRatings() {
+            document.querySelectorAll('.stars').forEach(starsContainer => {
+                const movieIndex = starsContainer.dataset.movie;
+                const movieTitle = currentMovies[movieIndex].title;
+                const stars = starsContainer.querySelectorAll('.star');
+
+                // Load saved rating
+                const savedRating = userRatings[movieTitle];
+                if (savedRating) {
+                    updateStars(stars, savedRating);
+                }
+
+                // Add hover effects
+                stars.forEach((star, index) => {
+                    star.addEventListener('mouseenter', () => {
+                        updateStars(stars, index + 1, true);
+                    });
+
+                    star.addEventListener('click', () => {
+                        const rating = index + 1;
+                        userRatings[movieTitle] = rating;
+                        updateStars(stars, rating);
+                        localStorage.setItem('horrorRatings', JSON.stringify(userRatings));
+                    });
+                });
+
+                starsContainer.addEventListener('mouseleave', () => {
+                    const currentRating = userRatings[movieTitle] || 0;
+                    updateStars(stars, currentRating);
+                });
+            });
+        }
+
+        // Update star display
+        function updateStars(stars, rating, isHover = false) {
+            stars.forEach((star, index) => {
+                star.classList.remove('active', 'hover');
+                if (index < rating) {
+                    star.classList.add(isHover ? 'hover' : 'active');
+                }
+            });
+        }
+
+        // Save review
+        function saveReview(movieIndex) {
+            const movieTitle = currentMovies[movieIndex].title;
+            const textarea = document.querySelector(`textarea[data-movie="${movieIndex}"]`);
+            const indicator = document.getElementById(`saved-${movieIndex}`);
+
+            userReviews[movieTitle] = textarea.value;
+            localStorage.setItem('horrorReviews', JSON.stringify(userReviews));
+
+            // Show saved indicator
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Load saved data from localStorage
+        function loadSavedData() {
+            const savedRatings = localStorage.getItem('horrorRatings');
+            const savedReviews = localStorage.getItem('horrorReviews');
+
+            if (savedRatings) {
+                userRatings = JSON.parse(savedRatings);
+            }
+
+            if (savedReviews) {
+                userReviews = JSON.parse(savedReviews);
+            }
+        }
+
+        // Initialize app
+        function init() {
+            loadSavedData();
+            initializeKeywordTags();
+            loadRandomMovies();
+        }
+
+        // Run on page load
+        init();
+    </script>
+</body>
+</html>
